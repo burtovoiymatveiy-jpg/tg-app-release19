@@ -7,135 +7,217 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root {
-            --bg: var(--tg-theme-bg-color, #1a1c20);
-            --sec-bg: var(--tg-theme-secondary-bg-color, rgba(255, 255, 255, 0.05));
-            --text: var(--tg-theme-text-color, #ffffff);
-            --hint: var(--tg-theme-hint-color, #707579);
-            --accent: var(--tg-theme-button-color, #3390ec);
+            --bg: #ffffff;
+            --sec-bg: #f4f4f5;
+            --text: #000000;
+            --hint: #707579;
+            --card-border: rgba(0,0,0,0.1);
+            --accent: #3390ec;
             --accent-red: #ff3b30;
             --accent-green: #34c759;
-            --star: #ffcc00;
+        }
+
+        [data-theme="dark"] {
+            --bg: #1c1c1d;
+            --sec-bg: #2c2c2e;
+            --text: #ffffff;
+            --hint: #8e8e93;
+            --card-border: rgba(255,255,255,0.1);
         }
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background: linear-gradient(180deg, var(--bg) 0%, #000 100%);
+            background-color: var(--bg);
             color: var(--text);
             margin: 0; padding: 16px;
+            display: flex; flex-direction: column; gap: 14px;
+            transition: background 0.3s, color 0.3s;
+        }
+
+        /* Кнопка переключения темы */
+        .theme-toggle {
+            position: absolute;
+            top: 12px;
+            right: 16px;
+            background: var(--sec-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 18px;
+            z-index: 100;
+        }
+
+        .sub-warning {
+            background-color: rgba(255, 152, 0, 0.1);
+            border: 1px solid #ff9800;
+            padding: 8px; border-radius: 10px;
+            text-align: center; font-size: 11px; font-weight: 700;
+            margin-right: 45px; /* Чтобы не перекрывать кнопку */
+        }
+
+        .anti-plag-note {
+            color: var(--accent-red);
+            font-size: 12px; font-weight: 800;
+            text-align: center; text-transform: uppercase;
+        }
+
+        .card {
+            background: var(--sec-bg);
+            border-radius: 16px;
+            padding: 16px;
             display: flex; flex-direction: column; gap: 12px;
-            min-height: 100vh;
+            border: 1px solid var(--card-border);
         }
 
-        /* Частицы */
-        #particles { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; }
-        .dot { position: absolute; background: #fff; border-radius: 50%; opacity: 0.3; animation: float 10s infinite linear; }
-        @keyframes float { from { transform: translateY(100vh); } to { transform: translateY(-10vh); } }
+        label { font-size: 11px; color: var(--hint); font-weight: 600; text-transform: uppercase; }
 
-        .sub-warning { background: rgba(255, 152, 0, 0.15); border: 1px solid #ff9800; padding: 6px; border-radius: 8px; text-align: center; font-size: 10px; font-weight: 700; white-space: nowrap; }
-        .anti-plag-note { color: var(--accent-red); font-size: 11px; font-weight: 800; text-align: center; text-transform: uppercase; }
-
-        .glass-card { background: var(--sec-bg); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 14px; }
-        label { font-size: 10px; color: var(--hint); font-weight: 700; text-transform: uppercase; margin-bottom: 4px; display: block; }
-        
         input, select, textarea {
-            background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px;
-            color: #fff; font-size: 15px; padding: 10px; width: 100%; box-sizing: border-box; outline: none;
+            background: var(--bg);
+            border: 1px solid var(--card-border);
+            border-radius: 10px;
+            color: var(--text);
+            font-size: 16px; padding: 12px;
+            width: 100%; box-sizing: border-box; outline: none;
         }
 
-        /* Рейтинг */
-        .rating-box { display: flex; align-items: center; gap: 10px; justify-content: center; margin: 5px 0; }
-        .stars { display: flex; gap: 4px; font-size: 20px; color: var(--star); cursor: pointer; }
+        .main-btn {
+            background: var(--accent); color: #ffffff;
+            border: none; padding: 16px; border-radius: 14px;
+            font-size: 16px; font-weight: 700; cursor: pointer;
+        }
 
-        .receipt { background: rgba(0,0,0,0.3); border: 1px dashed var(--hint); border-radius: 12px; padding: 12px; font-family: monospace; font-size: 12px; white-space: pre-line; }
+        .secondary-btn {
+            background: var(--sec-bg);
+            border: 1px solid var(--card-border);
+            color: var(--accent);
+            padding: 10px; border-radius: 12px;
+            font-size: 14px; font-weight: 600; cursor: pointer;
+            text-align: center; flex: 1;
+        }
 
-        .main-btn { background: var(--accent); color: #fff; border: none; padding: 16px; border-radius: 14px; font-size: 16px; font-weight: 800; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
-        .row { display: flex; gap: 8px; }
-        .sec-btn { flex: 1; background: var(--accent-green); color: #fff; border: none; padding: 12px; border-radius: 12px; font-weight: 700; font-size: 13px; }
-        .channel-btn { background: transparent; border: 1px solid var(--accent); color: var(--accent); padding: 8px; border-radius: 10px; font-size: 12px; font-weight: 600; }
+        .row { display: flex; gap: 10px; }
+        .row > div { flex: 1; }
 
-        .switch-box { display: flex; justify-content: space-between; align-items: center; }
-        .switch { width: 34px; height: 18px; position: relative; display: inline-block; }
+        .urgent-row {
+            display: flex; justify-content: space-between; align-items: center;
+            background: var(--sec-bg); padding: 12px 16px; border-radius: 14px;
+            border: 1px solid var(--card-border);
+        }
+
+        .preview-box {
+            background: var(--sec-bg);
+            border: 1px dashed var(--hint);
+            border-radius: 12px; padding: 14px;
+            font-family: monospace; font-size: 13px;
+            white-space: pre-line; color: var(--text);
+        }
+
+        .switch { position: relative; display: inline-block; width: 34px; height: 20px; }
         .switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background: #444; border-radius: 20px; transition: .3s; }
-        .slider:before { position: absolute; content: ""; height: 12px; width: 12px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: .3s; }
-        input:checked + .slider { background: var(--accent-red); }
-        input:checked + .slider:before { transform: translateX(16px); }
+        .slider {
+            position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #ccc; transition: .3s; border-radius: 20px;
+        }
+        .slider:before {
+            position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 3px;
+            background-color: white; transition: .3s; border-radius: 50%;
+        }
+        input:checked + .slider { background-color: var(--accent-red); }
+        input:checked + .slider:before { transform: translateX(14px); }
     </style>
 </head>
 <body>
-    <div id="particles"></div>
 
-    <div class="sub-warning">⚠️ Подписка на канал обязательна для выполнения заказа!</div>
-    <button class="channel-btn" onclick="tg.openTelegramLink('https://t.me/txtandpptx')">📢 Перейти в канал</button>
-    <div class="anti-plag-note">🛑 ТОЛЬКО РАБОТЫ БЕЗ ПРОВЕРКИ НА АНТИПЛАГИАТ</div>
+    <div class="theme-toggle" id="theme-toggle" onclick="toggleTheme()">☀️</div>
 
-    <div class="glass-card">
-        <label>Вид работы</label>
-        <select id="type" onchange="update()">
-            <option value="Реферат">📝 Реферат</option>
-            <option value="Презентация">📊 Презентация</option>
-            <option value="Доклад">🎤 Доклад</option>
-            <option value="Проект">💡 Проект</option>
-            <option value="Переписать лекцию">🖋 Переписать лекцию</option>
-        </select>
-        
-        <div class="row" style="margin-top: 10px;">
-            <div style="flex: 1;">
-                <label id="unit">Кол-во стр.</label>
+    <div class="sub-warning">
+        ⚠️ Подписка на канал обязательна!
+    </div>
+
+    <div class="row">
+        <div class="secondary-btn" onclick="tg.openTelegramLink('https://t.me/txtandpptx')">📢 Канал</div>
+        <div class="secondary-btn" onclick="tg.openTelegramLink('https://t.me/OTZblBblawarem')">⭐ Отзывы</div>
+    </div>
+
+    <div class="anti-plag-note">
+        🛑 БЕЗ ПРОВЕРКИ НА АНТИПЛАГИАТ
+    </div>
+
+    <div class="card">
+        <div>
+            <label>Вид работы</label>
+            <select id="type" onchange="update()">
+                <option value="Реферат">📝 Реферат</option>
+                <option value="Презентация">📊 Презентация</option>
+                <option value="Доклад">🎤 Доклад</option>
+                <option value="Проект">💡 Проект</option>
+                <option value="Переписать лекцию">🖋 Переписать лекцию</option>
+            </select>
+        </div>
+        <div class="row">
+            <div>
+                <label id="unit-label">Кол-во стр.</label>
                 <input type="number" id="count" placeholder="0" oninput="update()">
             </div>
-            <div style="flex: 1;">
+            <div>
                 <label>Срок (Дата)</label>
                 <input type="text" id="date" placeholder="Завтра" oninput="update()">
             </div>
         </div>
     </div>
 
-    <div class="glass-card">
-        <label>Дополнительные детали</label>
-        <textarea id="details" rows="2" placeholder="Особые пожелания..." oninput="update()"></textarea>
+    <div class="card">
+        <label>Остальные детали</label>
+        <textarea id="details" rows="2" placeholder="Напр: шрифт 14, список лит-ры..." oninput="update()"></textarea>
         <div style="margin-top: 10px;">
             <label>Желаемая сумма (₽)</label>
             <input type="text" id="price" placeholder="500" oninput="update()">
         </div>
     </div>
 
-    <div class="glass-card switch-box">
-        <span style="font-size: 13px; font-weight: 700;">🚨 Срочный заказ</span>
-        <label class="switch"><input type="checkbox" id="urgent" onchange="update()"><span class="slider"></span></label>
+    <div class="urgent-row">
+        <span style="font-size: 14px; font-weight: 700;">🚨 Срочный заказ</span>
+        <label class="switch">
+            <input type="checkbox" id="urgent" onchange="update()">
+            <span class="slider"></span>
+        </label>
     </div>
 
-    <div class="glass-card">
-        <label>Рейтинг сервиса</label>
-        <div class="rating-box">
-            <div class="stars">★★★★★</div>
-            <span style="font-size: 12px; font-weight: 700;">5.0 (482 заказа)</span>
-        </div>
-    </div>
-
-    <div class="receipt" id="preview"></div>
+    <div class="preview-box" id="preview"></div>
 
     <button class="main-btn" onclick="copy()">Скопировать анкету</button>
 
     <div class="row">
-        <button class="sec-btn" style="background: #555;" onclick="tg.showAlert('После вставки анкеты в чат, нажмите на значок скрепки 📎 и прикрепите файлы.')">📎 Как скинуть файлы?</button>
-        <button class="sec-btn" onclick="nav()">💬 Написать @awarem</button>
+        <div class="secondary-btn" style="color: var(--hint);" onclick="tg.showAlert('После отправки анкеты, прикрепите файлы через 📎')">📎 Файлы?</div>
+        <div class="secondary-btn" style="background: var(--accent-green); color: white; border: none;" onclick="nav()">💬 Написать @awarem</div>
     </div>
 
     <script>
         const tg = window.Telegram.WebApp;
         tg.expand();
 
-        // Частицы
-        const container = document.getElementById('particles');
-        for(let i=0; i<30; i++) {
-            const dot = document.createElement('div');
-            dot.className = 'dot';
-            dot.style.left = Math.random() * 100 + 'vw';
-            dot.style.width = dot.style.height = Math.random() * 3 + 'px';
-            dot.style.animationDuration = (Math.random() * 5 + 5) + 's';
-            dot.style.animationDelay = Math.random() * 5 + 's';
-            container.appendChild(dot);
+        // Тема
+        function toggleTheme() {
+            const body = document.body;
+            const btn = document.getElementById('theme-toggle');
+            if (body.getAttribute('data-theme') === 'dark') {
+                body.setAttribute('data-theme', 'light');
+                btn.innerText = '☀️';
+            } else {
+                body.setAttribute('data-theme', 'dark');
+                btn.innerText = '🌙';
+            }
+        }
+
+        // Авто-определение темы из TG
+        if (tg.colorScheme === 'dark') {
+            document.body.setAttribute('data-theme', 'dark');
+            document.getElementById('theme-toggle').innerText = '🌙';
         }
 
         function update() {
@@ -146,12 +228,15 @@
             const details = document.getElementById('details').value || 'нет';
             const isUrgent = document.getElementById('urgent').checked;
             
-            let unitText = type.includes("Презентация") ? "слайдов" : (type.includes("Переписать") ? "листов" : "страниц");
-            document.getElementById('unit').innerText = "Кол-во " + (type.includes("Презентация") ? "слайдов" : "стр.");
+            let unit = "страниц";
+            if (type.includes("Презентация")) unit = "слайдов";
+            if (type.includes("Переписать")) unit = "листов";
+            
+            document.getElementById('unit-label').innerText = "Кол-во " + (unit === "страниц" ? "стр." : unit);
 
             let header = isUrgent ? '🚨 СРОЧНЫЙ ЗАКАЗ 🚨\n' : '';
             const text = `${header}1. Вид работы: ${type}
-2. Количество ${unitText}: ${count}
+2. Количество ${unit}: ${count}
 3. Срок выполнения: ${date}
 4. Желаемая сумма оплаты: ${price} руб.
 5. Наличие плана / титульного листа: 
@@ -164,7 +249,7 @@
         function copy() {
             navigator.clipboard.writeText(document.getElementById('preview').innerText);
             tg.HapticFeedback.notificationOccurred('success');
-            tg.showAlert("Анкета скопирована! Теперь отправьте её @awarem и прикрепите файлы.");
+            tg.showAlert("Анкета скопирована!");
         }
 
         function nav() { tg.openTelegramLink("https://t.me/awarem"); }
